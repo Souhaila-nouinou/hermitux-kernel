@@ -1339,6 +1339,39 @@ static int vcpu_loop(void)
 
 				break;
 			}
+
+
+			case UHYVE_PORT_TRUNCATE: {
+				unsigned data = *((unsigned*)((size_t)run+run->io.data_offset));
+				uhyve_truncate_t *arg = (uhyve_truncate_t *)(guest_mem + data);
+
+				int length = truncate((const char *)(guest_mem+(size_t)arg->path),
+						arg->length);
+
+				if(length == -1)
+					arg->length = -errno;
+				else
+					arg->length = length;
+
+				break;
+			}
+
+
+			case UHYVE_PORT_FTRUNCATE: {
+				unsigned data = *((unsigned*)((size_t)run+run->io.data_offset));
+				uhyve_ftruncate_t *arg = (uhyve_ftruncate_t *)(guest_mem + data);
+
+				int length = ftruncate((guest_mem+(size_t)arg->fd),
+						arg->length);
+
+				if(length == -1)
+					arg->length = -errno;
+				else
+					arg->length = length;
+
+				break;
+			}
+
 			case UHYVE_PORT_RENAME: {
 				unsigned data = *((unsigned*)((size_t)run+run->io.data_offset));
 				uhyve_rename_t *arg = (uhyve_rename_t *)(guest_mem + data);
